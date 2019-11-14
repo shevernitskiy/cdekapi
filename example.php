@@ -14,11 +14,11 @@ $client = new \shevernitskiy\CdekApi\Client($account, $secret);
 //$result = $client->sendRequest('GET', '/v2/location/regions', $payload);
 
 // Список городов
-/*$result = $client->getCities([
+$result = $client->getCities([
     "country_codes" => ["ru"],
     "size" => 3,
     "region_code" => 23,
-]);*/
+]);
 
 // Список регионов
 /*$result = $client->getRegions([
