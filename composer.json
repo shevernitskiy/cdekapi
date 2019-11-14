@@ -1,0 +1,12 @@
+{
+    "name": "CdekApi",
+    "description": "PHP Client for cdek api v2",
+    "require": {
+        "guzzlehttp/guzzle": "^6.4"
+    },
+    "autoload": {
+        "psr-4": { 
+            "shevernitskiy\\CdekApi\\": "vendor/shevernitskiy/CdekApi/" 
+        }
+    }    
+}
