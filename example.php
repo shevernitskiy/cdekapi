@@ -14,11 +14,11 @@ $client = new \shevernitskiy\CdekApi\Client($account, $secret);
 //$result = $client->sendRequest('GET', '/v2/location/regions', $payload);
 
 // Список городов
-$result = $client->getCities([
-    "country_codes" => ["ru"],
-    "size" => 3,
-    "region_code" => 23,
-]);
+/*$result = $client->getCities([
+    'country_codes' => ['ru'],
+    'size' => 3,
+    'region_code' => 23,
+]);*/
 
 // Список регионов
 /*$result = $client->getRegions([
@@ -38,6 +38,9 @@ $result = $client->getCities([
 // Удаление вебхука
 //$result = $client->delWebhook('a6e5ebea-792a-4c5a-8206-ce1ce4819fd0');
 
-print(PHP_EOL.'==============================='.PHP_EOL);
-print('result: '.$result);
-print(PHP_EOL.'end example.php');
+// Использование справочника
+//echo PHP_EOL.\shevernitskiy\CdekApi\Data::orderStatus(1);
+
+echo PHP_EOL.'==============================='.PHP_EOL;
+echo 'result: '.$result;
+echo PHP_EOL.'end example.php';

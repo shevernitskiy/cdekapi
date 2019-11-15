@@ -1,6 +1,8 @@
 <?php
+
 /**
  * @version 0.1
+ * @uses GuzzleHttp
  */
 
 namespace shevernitskiy\CdekApi;
