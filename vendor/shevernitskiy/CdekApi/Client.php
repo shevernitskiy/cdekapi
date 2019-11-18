@@ -1,8 +1,11 @@
 <?php
 
 /**
- * @version 0.1
+ * @version 0.2
+ *
  * @uses GuzzleHttp
+ * @uses Climate
+ * @throws Exception
  */
 
 namespace shevernitskiy\CdekApi;
@@ -14,7 +17,10 @@ class Client
     const TOKEN_STORAGE = 'token.txt';
     const DEBUG = true;
 
-    protected $account, $secret, $token, $tokenExpires;
+    protected $account;
+    protected $secret;
+    protected $token;
+    protected $tokenExpires;
 
     public function __construct($account, $secret)
     {
@@ -45,7 +51,7 @@ class Client
     }
 
     /**
-     * Функция авторизации
+     * Функция авторизации.
      */
     public function auth()
     {
@@ -61,10 +67,10 @@ class Client
                     'grant_type' => self::GRANT_TYPE,
                     'client_id' => $this->account,
                     'client_secret' => $this->secret,
-                ]
+                ],
             ]);
             if (self::isJson($response->getBody())) {
-                self::debug('Auth JSON response:'.PHP_EOL. json_encode(json_decode($response->getBody(), true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                self::debug('Auth JSON response:'.PHP_EOL.self::jsonPrettify($response->getBody()));
             } else {
                 self::debug('Auth Response:'.PHP_EOL.$response->getBody());
             }
@@ -79,17 +85,17 @@ class Client
     }
 
     /**
-     * Функция отправки запроса к апи
-     * 
-     * @param string $type - GET, POST, PUT, DELET
-     * @param string $url - url до метода без base_uri
-     * @param array $payload - тело запроса
-     * 
-     * К запросу добавляется eader c авторизацией
+     * Функция отправки запроса к апи.
+     *
+     * @param string $type    - GET, POST, PUT, DELET
+     * @param string $url     - url до метода без base_uri
+     * @param array  $payload - тело запроса
+     *
+     * К запросу добавляется header c авторизацией и контент тайпом
      * $payload кодируется в json
-     * 
+     *
      * @return string response
-     * @return bool false
+     * @return bool   false
      */
     public function sendRequest($type, $url, $payload = null)
     {
@@ -101,32 +107,42 @@ class Client
                 'Authorization' => 'Bearer '.$this->token,
             ],
         ];
-        if ($payload) {
-            $request['json'] = $payload;
+        if ($payload != null) {
+            $request['headers']['Content-Type'] = 'application/json';
+            $request['body'] = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
         try {
             self::debug('Making request to '.$url);
             $response = $client->request($type, $url, $request);
             if (self::isJson($response->getBody())) {
-                self::debug('JSON response:'.PHP_EOL. json_encode(json_decode($response->getBody(), true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+                self::debug('JSON response:'.PHP_EOL.self::jsonPrettify($response->getBody()));
             } else {
                 self::debug('Response:'.PHP_EOL.$response->getBody());
             }
             return $response->getBody();
         } catch (\GuzzleHttp\Exception\ServerException $e) {
             self::DEBUG ? self::printException($e) : '';
-            return ($e->getResponse())->getBody();
+            if (self::isJson(($e->getResponse())->getBody())) {
+                return self::jsonPrettify(($e->getResponse())->getBody());
+            } else {
+                return ($e->getResponse())->getBody();
+            }
         } catch (\GuzzleHttp\Exception\ClientException $e) {
             self::DEBUG ? self::printException($e) : '';
-            return ($e->getResponse())->getBody();
+            if (self::isJson(($e->getResponse())->getBody())) {
+                return self::jsonPrettify(($e->getResponse())->getBody());
+            } else {
+                return ($e->getResponse())->getBody();
+            }
         }
-        return true;        
-    }    
+        return true;
+    }
 
     /**
-     * Функциии сохранения токена в файл
-     * 
+     * Функциии сохранения токена в файл.
+     *
      * В процессе записи добавлет поле 'expires' с таймстемпом истечения
+     *
      * @param string $json - json строка с информацией о токене
      */
     private function storeToken($json)
@@ -136,16 +152,19 @@ class Client
         $this->token = $array['access_token'];
         $this->tokenExpires = $array['expires'];
         if (!empty(self::TOKEN_STORAGE)) {
-            file_put_contents(self::TOKEN_STORAGE, json_encode($array, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-            self::debug('Token stored to: '.self::TOKEN_STORAGE);
+            if (file_put_contents(self::TOKEN_STORAGE, json_encode($array, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))) {
+                self::debug('Token stored to: '.self::TOKEN_STORAGE);
+            } else {
+                throw new \Exception('ERROR: cant write token to file');
+            }
         } else {
             throw new \Exception('ERROR: token storage must be specified');
         }
     }
 
     /**
-     * Функция чтения токена из файла
-     * 
+     * Функция чтения токена из файла.
+     *
      * Заполняет соответсвующие переменные объекта
      */
     private function readToken()
@@ -164,14 +183,14 @@ class Client
     }
 
     /**
-     * Функция обновления токена
-     * 
+     * Функция обновления токена.
+     *
      * Ищет сохраненный в файле токен, проверяет на валидность, обновляет при необходимости
      */
     private function refreshToken()
     {
         if (empty($this->token) || empty($this->tokenExpires)) {
-            self::debug('Read token from storage...');           
+            self::debug('Read token from storage...');
             if (!$this->readToken()) {
                 return false;
             }
@@ -183,7 +202,7 @@ class Client
             } else {
                 $result = $this->auth();
                 if ($result) {
-                    self::debug('Token refreshed, valid for: '.($this->tokenExpires - time()).'s');               
+                    self::debug('Token refreshed, valid for: '.($this->tokenExpires - time()).'s');
                     return true;
                 } else {
                     throw new \Exception('ERROR: cant refresh token, some shit happens');
@@ -214,7 +233,12 @@ class Client
     protected function isJson($str)
     {
         json_decode($str);
-        return (json_last_error() == JSON_ERROR_NONE);        
+        return json_last_error() == JSON_ERROR_NONE;
+    }
+
+    protected function jsonPrettify($json)
+    {
+        return json_encode(json_decode($json, true), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     protected function printException($e)
@@ -225,10 +249,7 @@ class Client
         echo \GuzzleHttp\Psr7\str($e->getResponse());
     }
 
-    /**
-     * $array = ["country_codes" => ["ru", "kz"], "size" => 3, ]
-     */
-    public function getRegions($array)
+    public function getRegions(array $array)
     {
         if (is_array($array)) {
             $result = $this->sendRequest('GET', '/v2/location/regions', $array);
@@ -236,13 +257,10 @@ class Client
         } else {
             throw new \Exception('ERROR: not valid array');
             return false;
-        }            
+        }
     }
 
-    /**
-     * $array = ["country_codes" => ["ru"], "size" => 3, "region_code" => 23]
-     */
-    public function getCities($array)
+    public function getCities(array $array)
     {
         if (is_array($array)) {
             $result = $this->sendRequest('GET', '/v2/location/cities', $array);
@@ -251,9 +269,9 @@ class Client
             throw new \Exception('ERROR: not valid array');
             return false;
         }
-    }    
+    }
 
-    public function addOrder($array)
+    public function addOrder(array $array)
     {
         if (is_array($array)) {
             $result = $this->sendRequest('POST', '/v2/orders', $array);
@@ -262,9 +280,9 @@ class Client
             throw new \Exception('ERROR: not valid array');
             return false;
         }
-    }  
-    
-    public function getOrder($uuid)
+    }
+
+    public function getOrder(string $uuid)
     {
         if (!empty($uuid) && is_string($uuid)) {
             $result = $this->sendRequest('GET', '/v2/orders/'.$uuid);
@@ -272,10 +290,10 @@ class Client
         } else {
             throw new \Exception('ERROR: uuid should be valid string id');
             return false;
-        }   
+        }
     }
 
-    public function delOrder($uuid)
+    public function delOrder(string $uuid)
     {
         if (!empty($uuid) && is_string($uuid)) {
             $result = $this->sendRequest('DELETE', '/v2/orders/'.$uuid);
@@ -283,10 +301,10 @@ class Client
         } else {
             throw new \Exception('ERROR: uuid should be valid string id');
             return false;
-        }   
+        }
     }
 
-    public function addCourier($array)
+    public function addCourier(array $array)
     {
         if (is_array($array)) {
             $result = $this->sendRequest('POST', '/v2/intakes', $array);
@@ -295,9 +313,9 @@ class Client
             throw new \Exception('ERROR: not valid array');
             return false;
         }
-    }  
-    
-    public function getCourier($uuid)
+    }
+
+    public function getCourier(string $uuid)
     {
         if (!empty($uuid) && is_string($uuid)) {
             $result = $this->sendRequest('GET', '/v2/intakes/'.$uuid);
@@ -305,10 +323,10 @@ class Client
         } else {
             throw new \Exception('ERROR: uuid should be valid string id');
             return false;
-        }   
+        }
     }
-    
-    public function delCourier($uuid)
+
+    public function delCourier(string $uuid)
     {
         if (!empty($uuid) && is_string($uuid)) {
             $result = $this->sendRequest('DELETE', '/v2/intakes/'.$uuid);
@@ -316,10 +334,10 @@ class Client
         } else {
             throw new \Exception('ERROR: uuid should be valid string id');
             return false;
-        }   
-    }    
+        }
+    }
 
-    public function addWebhook($array)
+    public function addWebhook(array $array)
     {
         if (is_array($array)) {
             $result = $this->sendRequest('POST', '/v2/webhooks', $array);
@@ -328,9 +346,9 @@ class Client
             throw new \Exception('ERROR: not valid array');
             return false;
         }
-    }      
+    }
 
-    public function getWebhook($uuid = null)
+    public function getWebhook(string $uuid = null)
     {
         if (!empty($uuid) && is_string($uuid)) {
             $result = $this->sendRequest('GET', '/v2/webhooks/'.$uuid);
@@ -341,10 +359,10 @@ class Client
         } else {
             throw new \Exception('ERROR: uuid should be valid string id or empty');
             return false;
-        }   
-    }    
+        }
+    }
 
-    public function delWebhook($uuid)
+    public function delWebhook(string $uuid)
     {
         if (!empty($uuid) && is_string($uuid)) {
             $result = $this->sendRequest('DELETE', '/v2/webhooks/'.$uuid);
@@ -352,10 +370,10 @@ class Client
         } else {
             throw new \Exception('ERROR: uuid should be valid string id');
             return false;
-        }   
+        }
     }
 
-    public function getPay($uuid)
+    public function getPay(string $uuid)
     {
         if (!empty($uuid) && is_string($uuid)) {
             $result = $this->sendRequest('GET', '/v2/payments/search?cdekNumber='.$uuid);
@@ -363,6 +381,6 @@ class Client
         } else {
             throw new \Exception('ERROR: uuid should be valid string id');
             return false;
-        }   
-    }    
+        }
+    }
 }

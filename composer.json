@@ -5,8 +5,8 @@
         "guzzlehttp/guzzle": "^6.4"
     },
     "autoload": {
-        "psr-4": { 
-            "shevernitskiy\\CdekApi\\": "vendor/shevernitskiy/CdekApi/" 
+        "psr-4": {
+            "shevernitskiy\\CdekApi\\": "vendor/shevernitskiy/CdekApi/"
         }
-    }    
+    }
 }
