@@ -2,8 +2,8 @@
 
 require_once __DIR__.'/vendor/autoload.php';
 
-$account = 'z9GRRu7FxmO53CQ9cFfI6qiy32wpfTkd';
-$secret = 'w24JTCv4MnAcuRTx0oHjHLDtyt3I6IBq';
+$account = 'z9GRRu7FxmO53CQ9cFfI6qiy32wpfTkd';      // тестовые логин
+$secret = 'w24JTCv4MnAcuRTx0oHjHLDtyt3I6IBq';       // пароль
 
 $client = new \shevernitskiy\CdekApi\Client($account, $secret);
 $result = '';
@@ -17,13 +17,13 @@ $result = '';
 //$result = $client->sendRequest('GET', '/v2/location/regions', $payload);
 
 /* ----------------------------- Список городов ----------------------------- */
-
+/*
 $result = $client->getCities([
     'country_codes' => ['ru'],
     'size' => 3,
     'region_code' => 23,
 ]);
-
+*/
 /* ----------------------------- Список регионов ---------------------------- */
 /*
 $result = $client->getRegions([
@@ -33,7 +33,7 @@ $result = $client->getRegions([
 */
 /* --------------------------- Получения вебхуков --------------------------- */
 
-//$result = $client->getWebhook(1);
+//$result = $client->getWebhook();
 
 /* --------------------------- Добавление вебхука --------------------------- */
 /*

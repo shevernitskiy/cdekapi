@@ -12,7 +12,7 @@ namespace shevernitskiy\CdekApi;
 
 class Client
 {
-    const URL_API = 'http://api.edu.cdek.ru';
+    const URL_API = 'http://api.cdek.ru';       // тестовая среда http://api.edu.cdek.ru
     const GRANT_TYPE = 'client_credentials';
     const TOKEN_STORAGE = 'token.txt';
     const DEBUG = true;
