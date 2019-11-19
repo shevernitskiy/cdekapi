@@ -89,7 +89,6 @@ $result = $client->addOrder([
     'items_cost_currency' => 'RUB',
     'packages' => [
         [
-            'number' => 'bar-001',
             'comment' => 'Упаковка',
             'height' => 10,
             'items' => [
