@@ -4,7 +4,6 @@
  * @version 0.2
  *
  * @uses GuzzleHttp
- * @uses Climate
  * @throws Exception
  */
 
@@ -14,7 +13,7 @@ class Client
 {
     const URL_API = 'http://api.cdek.ru';       // тестовая среда http://api.edu.cdek.ru
     const GRANT_TYPE = 'client_credentials';
-    const TOKEN_STORAGE = 'token.txt';
+    const TOKEN_STORAGE = 'token.json';
     const DEBUG = true;
 
     protected $account;
