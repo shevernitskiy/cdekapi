@@ -382,4 +382,48 @@ class Client
             return false;
         }
     }
+
+    public function formInvoice(array $array)
+    {
+        if (is_array($array)) {
+            $result = $this->sendRequest('POST', '/v2/print/orders', $array);
+            return $result;
+        } else {
+            throw new \Exception('ERROR: not valid array');
+            return false;
+        }
+    }
+
+    public function getInvoice(string $uuid)
+    {
+        if (!empty($uuid) && is_string($uuid)) {
+            $result = $this->sendRequest('GET', 'v2/print/orders/'.$uuid);
+            return $result;
+        } else {
+            throw new \Exception('ERROR: uuid should be valid string id');
+            return false;
+        }
+    }
+
+    public function formBarcode(array $array)
+    {
+        if (is_array($array)) {
+            $result = $this->sendRequest('POST', '/v2/print/barcodes', $array);
+            return $result;
+        } else {
+            throw new \Exception('ERROR: not valid array');
+            return false;
+        }
+    }
+
+    public function getBarcode(string $uuid)
+    {
+        if (!empty($uuid) && is_string($uuid)) {
+            $result = $this->sendRequest('GET', 'v2/print/barcodes/'.$uuid);
+            return $result;
+        } else {
+            throw new \Exception('ERROR: uuid should be valid string id');
+            return false;
+        }
+    }
 }
