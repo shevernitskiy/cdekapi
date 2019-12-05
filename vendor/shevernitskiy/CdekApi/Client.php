@@ -426,4 +426,33 @@ class Client
             return false;
         }
     }
+
+    public function getLastStatus(string $uuid)
+    {
+        if (!empty($uuid) && is_string($uuid)) {
+            $result = $this->getOrder($uuid);
+            $array = json_decode($result, true);
+            if (!empty($array['errors'])) {
+                return $result;
+            } else {
+                if (!empty($array['statuses'])) {
+                    $lastStatus = [];
+                    $lastDate = 0;
+                    foreach ($array['statuses'] as $key => $status) {
+                        if (strtotime($status['date_time']) >= $lastDate) {
+                            $lastDate = strtotime($status['date_time']);
+                            $lastStatus = $status;
+                        }
+                    }
+                    if (!empty($lastStatus)) {
+                        return json_encode($lastStatus, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+                    }
+                }
+            }
+            return false;
+        } else {
+            throw new \Exception('ERROR: uuid should be valid string id');
+            return false;
+        }
+    }
 }
