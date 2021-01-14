@@ -10,44 +10,44 @@ $result = '';
 
 /* ------- Ручная авторизация, в нормальном режиме ее делать не нужно ------- */
 
-//$result = $client->auth();
+$result = $client->auth();
 
 /* --------------------------- Любой запрос к апи --------------------------- */
 
-//$result = $client->sendRequest('GET', '/v2/location/regions', $payload);
+$result = $client->sendRequest('GET', '/v2/location/regions', $payload);
 
 /* ----------------------------- Список городов ----------------------------- */
-/*
+
 $result = $client->getCities([
     'country_codes' => ['ru'],
     'size' => 3,
     'region_code' => 23,
 ]);
-*/
+
 /* ----------------------------- Список регионов ---------------------------- */
-/*
+
 $result = $client->getRegions([
     "country_codes" => ["ru", "kz"],
     "size" => 3,
 ]);
-*/
+
 /* --------------------------- Получения вебхуков --------------------------- */
 
-//$result = $client->getWebhook();
+$result = $client->getWebhook();
 
 /* --------------------------- Добавление вебхука --------------------------- */
-/*
+
 $result = $client->addWebhook([
     'url' => 'https://www.webhook.site/6477b228-352d-443a-9145-411f0e2e27be',
     'type' => 'ORDER_STATUS',
 ]);
-*/
+
 /* ---------------------------- Удаление вебхука ---------------------------- */
 
-//$result = $client->delWebhook('a6e5ebea-792a-4c5a-8206-ce1ce4819fd0');
+$result = $client->delWebhook('a6e5ebea-792a-4c5a-8206-ce1ce4819fd0');
 
 /* --------------------------- Создание заказа ИМ --------------------------- */
-/*
+
 $result = $client->addOrder([
     'number' => 'ddOererre7450813980068',
     'comment' => 'Новый заказ',
@@ -129,18 +129,18 @@ $result = $client->addOrder([
     ],
     'tariff_code' => 137,
 ]);
-*/
+
 /* ---------------------------- Получение заказа ---------------------------- */
 
-//$result = $client->getOrder('72753034-f18a-4183-becf-abe69be02db6');
+$result = $client->getOrder('72753034-f18a-4183-becf-abe69be02db6');
 
 /* ----------------------------- Удаление заказа ---------------------------- */
 
-//$result = $client->getOrder('72753034-f18a-4183-becf-abe69be02db6');
+$result = $client->getOrder('72753034-f18a-4183-becf-abe69be02db6');
 
 /* ------------------------ Использование справочника ----------------------- */
 
-//echo PHP_EOL.\shevernitskiy\CdekApi\Data::orderStatus(1);
+echo PHP_EOL.\shevernitskiy\CdekApi\Data::orderStatus(1);
 
 echo PHP_EOL.'==============================='.PHP_EOL;
 echo 'result: '.PHP_EOL.$result;
